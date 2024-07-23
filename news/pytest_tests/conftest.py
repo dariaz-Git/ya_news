@@ -55,7 +55,15 @@ def news_list():
 
 
 @pytest.fixture
-def comment(author, news):
+def form_data(news):
+    return {
+        'news': news.id,
+        'text': 'Текст'
+    }
+
+
+@pytest.fixture
+def comment(author, news, form_data):
     comment = Comment.objects.create(
         news=news,
         author=author,
