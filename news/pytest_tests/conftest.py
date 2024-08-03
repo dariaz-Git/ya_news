@@ -45,13 +45,14 @@ def news():
 @pytest.fixture
 def news_list():
     today = datetime.today()
-    for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1):
-        News.objects.create(
+    News.objects.bulk_create(
+        News(
             title=f'Заголовок {index}',
             text='Текст',
             date=today - timedelta(days=index)
         )
-    return News.objects.all()
+        for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
+    )
 
 
 @pytest.fixture
@@ -86,6 +87,35 @@ def comment_list(author, news):
 
 
 @pytest.fixture
-def detail_url_fix(news):
-    url = reverse('news:detail', args=(news.id,))
-    return url
+def detail_url(news):
+    return reverse('news:detail', args=(news.id,))
+
+
+@pytest.fixture
+def login_url():
+    return reverse('users:login')
+
+
+@pytest.fixture
+def comment_edit_url(comment):
+    return reverse('news:edit', args=(comment.id,))
+
+
+@pytest.fixture
+def comment_delete_url(comment):
+    return reverse('news:delete', args=(comment.id,))
+
+
+@pytest.fixture
+def home_url():
+    return reverse('news:home')
+
+
+@pytest.fixture
+def logout_url():
+    return reverse('users:logout')
+
+
+@pytest.fixture
+def signup_url():
+    return reverse('users:signup')

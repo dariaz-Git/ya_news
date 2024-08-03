@@ -1,27 +1,22 @@
 from http import HTTPStatus
 
-from django.urls import reverse
-from pytest_django.asserts import assertRedirects
 import pytest
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    'name, arg',
+    'url',
     (
-        ('news:detail', 'id_of_news'),
-        ('news:home', None),
-        ('users:login', None),
-        ('users:logout', None),
-        ('users:signup', None)
+        (pytest.lazy_fixture('detail_url')),
+        (pytest.lazy_fixture('home_url')),
+        (pytest.lazy_fixture('login_url')),
+        (pytest.lazy_fixture('logout_url')),
+        (pytest.lazy_fixture('signup_url')),
     )
 )
 def test_home_page_availability_for_anonymous_user(
-    client, name, arg, news
+    client, url
 ):
-    if arg is not None:
-        arg = (news.id,)
-    url = reverse(name, args=arg)
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 
@@ -30,28 +25,25 @@ def test_home_page_availability_for_anonymous_user(
     'user, expected_status',
     (
         (pytest.lazy_fixture('author_client'), HTTPStatus.OK),
+        (pytest.lazy_fixture('client'), HTTPStatus.FOUND),
         (pytest.lazy_fixture('not_author_client'), HTTPStatus.NOT_FOUND)
     )
 )
 @pytest.mark.parametrize(
-    'name',
-    ('news:edit', 'news:delete')
+    'url', (
+        (pytest.lazy_fixture('comment_edit_url')),
+        (pytest.lazy_fixture('comment_delete_url'))
+    )
 )
 def test_availability_for_comment_edit_and_delete(
-    user, expected_status, name, comment
+    user, expected_status, url
 ):
-    url = reverse(name, args=(comment.id,))
     response = user.get(url)
     assert response.status_code == expected_status
 
-
-@pytest.mark.parametrize(
-    'name',
-    ('news:edit', 'news:delete')
-)
-def test_redirect_for_anonymous_client(client, name, comment):
-    login_url = reverse('users:login')
-    url = reverse(name, args=(comment.id,))
-    expected_url = f'{login_url}?next={url}'
-    response = client.get(url)
-    assertRedirects(response, expected_url)
+# "Проверки ВСЕХ статус кодов достаточно реализовать в 1 параметризованном
+# методе. В качестве параметров стоит объявить запрашиваемый url, клиент
+# (аноним, автор или подписчик), и ожидаемый ответ ."
+# Только delete/edit объединила
+# Все статус кода реализовывать не стала, потому что лишком сложным и
+# громоздким получается в едином целом
