@@ -3,6 +3,7 @@ import pytest
 from django.conf import settings
 
 from news.forms import CommentForm
+from news.models import Comment
 
 
 def test_authorized_client_has_form(author_client, detail_url):
@@ -20,7 +21,7 @@ def test_anonymous_client_has_no_form(client, detail_url):
 def test_comments_order(comment_list, client, detail_url):
     response = client.get(detail_url)
     assert 'news' in response.context
-    all_timestamps = [comment.created for comment in comment_list]
+    all_timestamps = [comment.created for comment in Comment.objects.all()]
     sorted_timestamps = sorted(all_timestamps)
     assert all_timestamps == sorted_timestamps
 

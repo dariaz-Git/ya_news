@@ -83,7 +83,6 @@ def comment_list(author, news):
             text=f'Текст комментария {index}'
         )
         comment.created = now + timedelta(days=index)
-    return news.comment_set.all()
 
 
 @pytest.fixture
