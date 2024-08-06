@@ -43,23 +43,27 @@ def test_user_cant_use_bad_words(author_client, detail_url, bad_word):
 
 @pytest.mark.django_db
 def test_author_can_edit_comment(
-    detail_url, author_client, comment, form_data, comment_edit_url
+    detail_url, author_client,
+    form_data, comment_edit_url, news, author
 ):
     response = author_client.post(comment_edit_url, data=form_data)
     assertRedirects(response, detail_url + '#comments')
-    comment.refresh_from_db()
-    assert comment.text == form_data['text']
-    assert Comment.objects.count() == 1
+    comment_new = Comment.objects.get()
+    assert comment_new.text == form_data['text']
+    assert comment_new.news == news
+    assert comment_new.author == author
 
 
 def test_user_cant_edit_comment_of_another_user(
-    not_author_client, form_data, comment, comment_edit_url
+    not_author_client, form_data, comment, comment_edit_url, news, author
 ):
     old_text = comment.text
     response = not_author_client.post(comment_edit_url, data=form_data)
     assert response.status_code == HTTPStatus.NOT_FOUND
-    comment.refresh_from_db()
-    assert old_text == comment.text
+    comment_old = Comment.objects.get()
+    assert comment_old.text == old_text
+    assert comment_old.news == news
+    assert comment_old.author == author
 
 
 def test_author_can_delete_comment(

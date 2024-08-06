@@ -64,7 +64,7 @@ def form_data(news):
 
 
 @pytest.fixture
-def comment(author, news, form_data):
+def comment(author, news):
     comment = Comment.objects.create(
         news=news,
         author=author,
